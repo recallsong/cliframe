@@ -1,0 +1,15 @@
+debug: "false"
+pprof: ":9080"
+rmt_cfg: "etcd://localhost/config/path.json"
+logs:
+    level: "INFO"
+    formatter:
+        name: "text"
+    out:
+        name: "rotatelogs"
+        options:
+            path: "app.%Y%m%d%H%M.log"
+            link-name: "app.log"
+            rotation-time": "86400s"
+            max-age": "7days"
+
