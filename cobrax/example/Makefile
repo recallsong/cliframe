@@ -19,16 +19,16 @@ VERSION_OPS := -ldflags "\
         -X '${VERSION_PKG}.CommitID=${COMMIT_ID}' \
         -X '${VERSION_PKG}.GoVersion=${GO_VERSION}'"
 
-.PHONY: version clean
+.PHONY: build-version clean
 
-build: version
+build: build-version
 	go build ${VERSION_OPS} -o "${PROJ_PATH}/${APP_NAME}"
 
-cross-build: version
+cross-build: build-version
 	CGO_ENABLED=0 GOOS=${GO_OS} GOARCH=${GO_ARCH} go build ${VERSION_OPS} -o "${PROJ_PATH}/bin/${GO_OS}-${GO_ARCH}-${APP_NAME}"
 
-version:
-	@echo ------------------------
+build-version:
+	@echo ------------ Start Build Version Details ------------
 	@echo AppName: ${APP_NAME}
 	@echo Arch: ${GO_ARCH}
 	@echo OS: ${GO_OS}
@@ -36,7 +36,7 @@ version:
 	@echo BuildTime: ${BUILD_TIME}
 	@echo GoVersion: ${GO_VERSION}
 	@echo CommitID: ${COMMIT_ID}
-	@echo ------------------------
+	@echo ------------ End   Build Version Details ------------
 
 clean:
 	rm -f "${PROJ_PATH}/${APP_NAME}"
@@ -45,14 +45,22 @@ clean:
 	docker rmi ${APP_NAME}:${VERSION} 2>/dev/null || :
 	docker rmi ${APP_NAME}:latest 2>/dev/null || :
 
+# run example
+${APP_NAME}:
+	go build ${VERSION_OPS} -o "${PROJ_PATH}/${APP_NAME}"
+run-version:${APP_NAME}
+	@echo "Start Run ${APP_NAME} ..."
+	@"${PROJ_PATH}/${APP_NAME}" version
+run-help:
+	@go run main.go help
 run:
-	@go run main.go
+	@go run main.go --debug=true --other_conf="this parameter from flag"
 
 bin/linux-amd64-${APP_NAME}:
 	GO_OS=linux GO_ARCH=amd64 make cross-build
-docker-build:bin/linux-amd64-example
+docker-build:bin/linux-amd64-${APP_NAME}
 	docker build -t=${APP_NAME}:${VERSION} .
 	echo "build docker on `date`" > docker-build
 
 docker-run:docker-build
-	docker run -ti --rm ${APP_NAME}:${VERSION}
+	@docker run -ti --rm ${APP_NAME}:${VERSION}

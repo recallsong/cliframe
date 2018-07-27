@@ -15,17 +15,23 @@ Command-Line Interface Framework.
 *   从远程K/V存储服务器（etcd）上读取读取配置信息
 *   从文件、远程K/V配置日志行为
 *   默认具有version命令，debug、config等通用参数
+*   提供Dockerfile、Makefile、配置文件的例子， [cobrax/example](https://github.com/recallsong/cliframe/tree/master/cobrax/example)
+
+# Download
+
+        go get github.com/recallsong/cliframe
 
 # Quick Start
 ## Example
+Cypy [cobrax/example](https://github.com/recallsong/cliframe/tree/master/cobrax/example) and change it as your application
 ```go
 import (
     "github.com/recallsong/cliframe/cobrax"
     log "github.com/sirupsen/logrus"
     "github.com/spf13/cobra"
     "github.com/spf13/viper"
-    // "github.com/recallsong/cliframe/cliframe/rmtcfg" 添加读取远程配置支持 
-    // _ "github.com/recallsong/cliframe/cliframe/loghooks" 添加更多日志输出支持
+    // "github.com/recallsong/cliframe/cliframe/rmtcfg" Add remote config support 
+    // _ "github.com/recallsong/cliframe/cliframe/loghooks" Add more log outputs support
 )
 
 type AppConfig struct {
@@ -57,8 +63,36 @@ func main() {
 }
 
 ```
-## Details
-详细参考[example](https://github.com/recallsong/cliframe/tree/master/cobrax/example)文件夹中的例子代码。
+## Run
+
+    make run
+
+Or
+
+    make build
+    ./example
+    
+Or run in docker container
+
+    make docker-run
+
+Output:
+
+    INFO[0000] run in debug mode
+    INFO[0000] toggle: true
+    INFO[0000] name: Ruiguo
+    INFO[0000] other: this parameter from flag
+
+## Other Make Targets
+
+- make cross-build
+```
+    GO_OS=linux GO_ARCH=amd64 make cross-build
+```
+- make docker-build
+- make clean
+- make run-help
+- make run-version
 
 # License
 [MIT](https://github.com/recallsong/cliframe/blob/master/LICENSE)
