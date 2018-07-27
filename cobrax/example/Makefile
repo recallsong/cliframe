@@ -1,10 +1,13 @@
+# Author: recallsong
+# Email: songruiguo@qq.com
+
 # project info
 PROJ_PATH := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 APP_NAME := $(shell echo ${PROJ_PATH} | sed 's/^\(.*\)[/]//')
 # build info
 GO_ARCH ?= $(shell go env GOARCH)
 GO_OS ?= $(shell go env GOOS)
-VERSION := "1.0.0"
+VERSION := 1.0.0
 COMMIT_ID := $(shell git rev-parse HEAD 2>/dev/null)
 BUILD_TIME := $(shell date "+%Y-%m-%d %H:%M:%S")
 GO_VERSION := $(shell go version)
@@ -38,6 +41,18 @@ version:
 clean:
 	rm -f "${PROJ_PATH}/${APP_NAME}"
 	rm -rf "${PROJ_PATH}/bin"
+	rm -f "${PROJ_PATH}/docker-build"
+	docker rmi ${APP_NAME}:${VERSION} 2>/dev/null || :
+	docker rmi ${APP_NAME}:latest 2>/dev/null || :
 
 run:
 	@go run main.go
+
+bin/linux-amd64-${APP_NAME}:
+	GO_OS=linux GO_ARCH=amd64 make cross-build
+docker-build:bin/linux-amd64-example
+	docker build -t=${APP_NAME}:${VERSION} .
+	echo "build docker on `date`" > docker-build
+
+docker-run:docker-build
+	docker run -ti --rm ${APP_NAME}:${VERSION}
