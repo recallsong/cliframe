@@ -79,7 +79,7 @@ func setUpCommand(cmd *cobra.Command, flags *ComFlags, opts *Options) {
 	viper.BindPFlag("pprof_addr", peristFs.Lookup("pprof_addr"))
 	viper.BindPFlag("debug", peristFs.Lookup("debug"))
 	if opts.RmtCfgReader != nil {
-		peristFs.StringVar(&flags.RmtCfg, "rmt_cfg", "", "remote config addr and path")
+		peristFs.StringVar(&flags.RmtCfg, "rmt_cfg", "", "url of remote config (example \"etcd://127.0.0.1:2379/path\")")
 		viper.BindPFlag("rmt_cfg", peristFs.Lookup("rmt_cfg"))
 	}
 }
