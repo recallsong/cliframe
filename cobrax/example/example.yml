@@ -1,6 +1,7 @@
 debug: "false"
 pprof: ":9080"
 rmt_cfg: "etcd://localhost/config/path.json"
+name: "RecallSong"
 logs:
     level: "INFO"
     formatter:

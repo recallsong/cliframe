@@ -26,6 +26,14 @@ type ComFlags struct {
 var (
 	Flags   = &ComFlags{}
 	rootCmd = &cobra.Command{}
+	// 配置文件默认目录
+	CfgDir string
+	// 不带后缀的配置文件名
+	CfgFileName string
+	// 环境变量前缀
+	EnvPrefix string
+	// 远程配置阅读器
+	rmtCfgReader RmtCfgReader
 )
 
 type RmtCfgReader func(rmtcfg string) error
@@ -47,18 +55,23 @@ func Execute(name string, opts *Options) {
 	}
 	rootCmd.Use = name
 	vercmd.AddTo(rootCmd)
+	CfgDir = opts.CfgDir
+	CfgFileName = opts.CfgFileName
+	EnvPrefix = opts.EnvPrefix
+	rmtCfgReader = opts.RmtCfgReader
 	if !opts.NoDefaultSets {
 		setUpCommand(rootCmd, Flags, opts)
 	}
-	opts.Init(rootCmd)
-	rootCmd.Run = func(cmd *cobra.Command, args []string) {
-		if !opts.NoDefaultSets {
-			initCommand(rootCmd, Flags, opts)
-			if opts.AppConfig != nil {
-				GetConfig(opts.AppConfig)
+	if opts.Init != nil {
+		opts.Init(rootCmd)
+	}
+	if opts.Run != nil {
+		rootCmd.Run = func(cmd *cobra.Command, args []string) {
+			if !opts.NoDefaultSets {
+				InitCommand(opts.AppConfig)
 			}
+			opts.Run(cmd, args)
 		}
-		opts.Run(cmd, args)
 	}
 	if err := rootCmd.Execute(); err != nil {
 		log.Fatal(err)
@@ -72,7 +85,7 @@ func setUpCommand(cmd *cobra.Command, flags *ComFlags, opts *Options) {
 	if len(opts.CfgFileName) <= 0 {
 		opts.CfgFileName = cmd.Use
 	}
-	peristFs := rootCmd.PersistentFlags()
+	peristFs := cmd.PersistentFlags()
 	peristFs.StringVar(&flags.CfgFile, "config", "", "config file (default is "+opts.CfgDir+"/"+opts.CfgFileName+".json)")
 	peristFs.BoolVar(&flags.Debug, "debug", false, "run in debug mode")
 	peristFs.StringVar(&flags.PprofAddr, "pprof_addr", "", "address of listen for pprof http server")
@@ -84,17 +97,20 @@ func setUpCommand(cmd *cobra.Command, flags *ComFlags, opts *Options) {
 	}
 }
 
-func initCommand(cmd *cobra.Command, flags *ComFlags, opts *Options) {
-	readConfig(cmd, flags, opts)
+func InitCommand(cfgOutput interface{}) {
+	readConfig()
+	if cfgOutput != nil {
+		GetConfig(cfgOutput)
+	}
 	//日志初始化
-	flags.Debug = viper.GetBool("debug")
-	if flags.Debug {
+	Flags.Debug = viper.GetBool("debug")
+	if Flags.Debug {
 		log.SetLevel(log.DebugLevel)
 		log.Info("run in debug mode")
 	}
 	log_cfg := viper.GetStringMap("logs")
 	if log_cfg != nil {
-		if flags.Debug {
+		if Flags.Debug {
 			out, err := dic.FromMap(log_cfg).GetDic("out")
 			if err == nil && out != nil {
 				out.Set("name", "stdout")
@@ -103,28 +119,28 @@ func initCommand(cmd *cobra.Command, flags *ComFlags, opts *Options) {
 		initLogger(log_cfg)
 	}
 	// 启用pprof
-	flags.PprofAddr = viper.GetString("pprof_addr")
-	if flags.PprofAddr != "" {
-		log.Info("starting pprof server at ", flags.PprofAddr)
+	Flags.PprofAddr = viper.GetString("pprof_addr")
+	if Flags.PprofAddr != "" {
+		log.Info("starting pprof server at ", Flags.PprofAddr)
 		go func() {
-			log.Error("fail to serve pprof server : ", http.ListenAndServe(flags.PprofAddr, nil))
+			log.Error("fail to serve pprof server : ", http.ListenAndServe(Flags.PprofAddr, nil))
 		}()
 	}
 }
 
-func readConfig(cmd *cobra.Command, flags *ComFlags, opts *Options) {
+func readConfig() {
 	// 设置可以从环境变量中读取信息
-	if len(opts.EnvPrefix) > 0 {
-		viper.SetEnvPrefix(opts.EnvPrefix)
+	if len(EnvPrefix) > 0 {
+		viper.SetEnvPrefix(EnvPrefix)
 		viper.AutomaticEnv()
 	}
 
 	// 设置配置文件路径
-	if flags.CfgFile != "" {
-		viper.SetConfigFile(flags.CfgFile)
+	if Flags.CfgFile != "" {
+		viper.SetConfigFile(Flags.CfgFile)
 	} else {
-		viper.AddConfigPath(opts.CfgDir)
-		viper.SetConfigName(opts.CfgFileName)
+		viper.AddConfigPath(CfgDir)
+		viper.SetConfigName(CfgFileName)
 	}
 
 	// 读取配置信息
@@ -137,10 +153,10 @@ func readConfig(cmd *cobra.Command, flags *ComFlags, opts *Options) {
 	}
 
 	// 从远程读取配置信息
-	if opts.RmtCfgReader != nil {
-		flags.RmtCfg = viper.GetString("rmt_cfg")
-		if len(flags.RmtCfg) > 0 {
-			err := opts.RmtCfgReader(flags.RmtCfg)
+	if rmtCfgReader != nil {
+		Flags.RmtCfg = viper.GetString("rmt_cfg")
+		if len(Flags.RmtCfg) > 0 {
+			err := rmtCfgReader(Flags.RmtCfg)
 			if err != nil {
 				log.Fatal(err)
 			}

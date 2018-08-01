@@ -15,6 +15,15 @@ type AppConfig struct {
 
 func main() {
 	cfg := &AppConfig{}
+	var subCmd = &cobra.Command{
+		Use: "subcmd",
+		Run: func(cmd *cobra.Command, args []string) {
+			cobrax.InitCommand(cfg)
+			log.Info("toggle: ", cfg.Toggle)
+			log.Info("name: ", cfg.Name)
+			log.Info("other: ", cfg.OtherConf)
+		},
+	}
 	cobrax.Execute("example", &cobrax.Options{
 		CfgDir:      ".",
 		CfgFileName: "example",
@@ -26,6 +35,7 @@ func main() {
 			fs.StringVarP(&cfg.Name, "name", "n", "Ruiguo", "it's my name")
 			fs.StringVar(&cfg.OtherConf, "other_conf", "", "other config")
 			viper.BindPFlags(fs) // bind to pflag
+			cmd.AddCommand(subCmd)
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			log.Info("toggle: ", cfg.Toggle)
