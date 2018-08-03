@@ -23,7 +23,7 @@ Command-Line Interface Framework.
 
 # Quick Start
 ## Example
-Cypy [cobrax/example](https://github.com/recallsong/cliframe/tree/master/cobrax/example) and change it as your application
+Copy [cobrax/example](https://github.com/recallsong/cliframe/tree/master/cobrax/example) and change it as your application
 ```go
 import (
     "github.com/recallsong/cliframe/cobrax"
