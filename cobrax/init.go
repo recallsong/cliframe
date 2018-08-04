@@ -106,7 +106,6 @@ func InitCommand(cfgOutput interface{}) {
 	Flags.Debug = viper.GetBool("debug")
 	if Flags.Debug {
 		log.SetLevel(log.DebugLevel)
-		log.Info("run in debug mode")
 	}
 	log_cfg := viper.GetStringMap("logs")
 	if log_cfg != nil {
