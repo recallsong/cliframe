@@ -60,6 +60,7 @@ bin/linux-amd64-${APP_NAME}:
 	GO_OS=linux GO_ARCH=amd64 make cross-build
 docker-build:bin/linux-amd64-${APP_NAME}
 	docker build -t=${APP_NAME}:${VERSION} .
+	docker tag ${APP_NAME}:${VERSION} ${APP_NAME}:latest
 	echo "build docker on `date`" > docker-build
 
 docker-run:docker-build
