@@ -30,8 +30,8 @@ import (
     log "github.com/sirupsen/logrus"
     "github.com/spf13/cobra"
     "github.com/spf13/viper"
-    // "github.com/recallsong/cliframe/cliframe/rmtcfg" Add remote config support 
-    // _ "github.com/recallsong/cliframe/cliframe/loghooks" Add more log outputs support
+    // "github.com/recallsong/cliframe/cobrax/rmtcfg" Add remote config support 
+    // _ "github.com/recallsong/cliframe/cobrax/loghooks" Add more log outputs support
 )
 
 type AppConfig struct {

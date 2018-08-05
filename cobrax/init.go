@@ -86,13 +86,13 @@ func setUpCommand(cmd *cobra.Command, flags *ComFlags, opts *Options) {
 		opts.CfgFileName = cmd.Use
 	}
 	peristFs := cmd.PersistentFlags()
-	peristFs.StringVar(&flags.CfgFile, "config", "", "config file (default is "+opts.CfgDir+"/"+opts.CfgFileName+".json)")
-	peristFs.BoolVar(&flags.Debug, "debug", false, "run in debug mode")
-	peristFs.StringVar(&flags.PprofAddr, "pprof_addr", "", "address of listen for pprof http server")
+	peristFs.StringVar(&flags.CfgFile, "config", "", "Config file (default is "+opts.CfgDir+"/"+opts.CfgFileName+".json or .yml)")
+	peristFs.BoolVar(&flags.Debug, "debug", false, "Run in debug mode")
+	peristFs.StringVar(&flags.PprofAddr, "pprof_addr", "", "Address of listen for pprof http server")
 	viper.BindPFlag("pprof_addr", peristFs.Lookup("pprof_addr"))
 	viper.BindPFlag("debug", peristFs.Lookup("debug"))
 	if opts.RmtCfgReader != nil {
-		peristFs.StringVar(&flags.RmtCfg, "rmt_cfg", "", "url of remote config (example \"etcd://127.0.0.1:2379/path\")")
+		peristFs.StringVar(&flags.RmtCfg, "rmt_cfg", "", "URL of remote config (example \"etcd://127.0.0.1:2379/path\")")
 		viper.BindPFlag("rmt_cfg", peristFs.Lookup("rmt_cfg"))
 	}
 }
@@ -150,7 +150,7 @@ func readConfig() {
 			log.Fatal(err)
 		}
 	} else {
-		log.Info("using config file:", viper.ConfigFileUsed())
+		log.Debug("using config file:", viper.ConfigFileUsed())
 	}
 
 	// 从远程读取配置信息
