@@ -139,7 +139,7 @@ func readConfig() {
 	// 设置配置文件路径
 	if Flags.CfgFile != "" {
 		viper.SetConfigFile(Flags.CfgFile)
-	} else {
+	} else if CfgDir != "" && CfgFileName != "" {
 		viper.AddConfigPath(CfgDir)
 		viper.SetConfigName(CfgFileName)
 	}
