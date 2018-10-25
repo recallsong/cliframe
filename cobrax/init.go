@@ -2,7 +2,9 @@ package cobrax
 
 import (
 	"net/http"
+	"reflect"
 	"runtime"
+	"strings"
 
 	"github.com/recallsong/go-utils/container/dic"
 	vercmd "github.com/recallsong/go-utils/version/cobra-vercmd"
@@ -98,10 +100,7 @@ func setUpCommand(cmd *cobra.Command, flags *ComFlags, opts *Options) {
 }
 
 func InitCommand(cfgOutput interface{}) {
-	readConfig()
-	if cfgOutput != nil {
-		GetConfig(cfgOutput)
-	}
+	readConfig(cfgOutput)
 	//日志初始化
 	Flags.Debug = viper.GetBool("debug")
 	if Flags.Debug {
@@ -129,11 +128,26 @@ func InitCommand(cfgOutput interface{}) {
 	}
 }
 
-func readConfig() {
+func readConfig(cfgOutput interface{}) {
 	// 设置可以从环境变量中读取信息
 	if len(EnvPrefix) > 0 {
 		viper.SetEnvPrefix(EnvPrefix)
 		viper.AutomaticEnv()
+		if cfgOutput != nil {
+			typ := reflect.TypeOf(cfgOutput)
+			for typ.Kind() == reflect.Ptr {
+				typ = typ.Elem()
+			}
+			for i, num := 0, typ.NumField(); i < num; i++ {
+				field := typ.Field(i)
+				key := field.Tag.Get("mapstructure")
+				if len(key) == 0 {
+					key = field.Name
+				}
+				key = strings.ToUpper(key)
+				viper.BindEnv(key)
+			}
+		}
 	}
 
 	// 设置配置文件路径
@@ -162,6 +176,11 @@ func readConfig() {
 				log.Fatal(err)
 			}
 		}
+	}
+
+	// 输出配置信息
+	if cfgOutput != nil {
+		GetConfig(cfgOutput)
 	}
 }
 
