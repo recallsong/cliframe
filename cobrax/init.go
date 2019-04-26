@@ -110,10 +110,10 @@ func InitCommand(cfgOutput interface{}) {
 	if log_cfg != nil {
 		if Flags.Debug {
 			cfg := dic.FromMap(log_cfg)
-			out, err := cfg.GetDic("out")
-			if err == nil && out != nil {
-				out.Set("name", "stdout")
-			}
+			// out, err := cfg.GetDic("out")
+			// if err == nil && out != nil {
+			// 	out.Set("name", "stdout")
+			// }
 			cfg.Set("level", "DEBUG")
 		}
 		initLogger(log_cfg)
