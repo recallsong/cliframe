@@ -108,13 +108,18 @@ func InitCommand(cfgOutput interface{}) {
 	}
 	log_cfg := viper.GetStringMap("logs")
 	if log_cfg != nil {
+		cfg := dic.FromMap(log_cfg)
 		if Flags.Debug {
-			cfg := dic.FromMap(log_cfg)
-			// out, err := cfg.GetDic("out")
-			// if err == nil && out != nil {
-			// 	out.Set("name", "stdout")
-			// }
+			out, err := cfg.GetDic("out")
+			if err == nil && out != nil {
+				out.Set("name", "stdout")
+			}
 			cfg.Set("level", "DEBUG")
+		} else {
+			level := cfg.GetString("level", "")
+			if level == "DEBUG" || level == "TRACE" {
+				Flags.Debug = true
+			}
 		}
 		initLogger(log_cfg)
 	}
